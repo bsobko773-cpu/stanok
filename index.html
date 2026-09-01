@@ -44,7 +44,7 @@
         </div>
     </div>
 
-    <script>
+    <script defer>
         const firebaseConfig = {
             apiKey: "AIzaSyDoSHF1EsKrHmtL6gb4IOnYS0vR3h86xZM",
             authDomain: "://firebaseapp.com",
@@ -96,9 +96,9 @@
                 } else {
                     await userRef.set({
                         username: user.displayName,
-                        balance: 500
+                        balance: 2
                     });
-                    balanceTxt.innerText = "500";
+                    balanceTxt.innerText = "2";
                 }
             } else {
                 loginZone.style.display = 'block';
