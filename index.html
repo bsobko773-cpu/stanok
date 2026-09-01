@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SO2 GOLD UPGRADER</title>
+    
+    <!-- Підключаємо Firebase звичайними тегами, які не блокує CORS -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+
     <style>
         body { 
             background-color: #0b0b0e; 
@@ -99,26 +105,22 @@
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://cloudflare.com";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://cloudflare.com";
-        import { getFirestore, doc, getDoc, setDoc } from "https://cloudflare.com";
-
-        // Твій особистий конфіг
+    <script>
+        // Твій особистий конфіг Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDoSHF1EsKrHmtL6gb4IOnYS0vR3h86xZM",
-            authDomain: "so2-gold.firebaseapp.com",
+            authDomain: "://firebaseapp.com",
             projectId: "so2-gold",
             storageBucket: "so2-gold.firebasestorage.app",
             messagingSenderId: "944311935725",
             appId: "1:944311935725:web:c26c3a17543ecb334922e4"
         };
 
-        // Ініціалізація сервісів
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
+        // Ініціалізація сервісів за сумісним (compat) методом
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const provider = new firebase.auth.GoogleAuthProvider();
 
         const loginBtn = document.getElementById('login-btn');
         const logoutBtn = document.getElementById('logout-btn');
@@ -129,27 +131,27 @@
 
         loginBtn.addEventListener('click', async () => {
             try {
-                await signInWithPopup(auth, provider);
+                await auth.signInWithPopup(provider);
             } catch (error) {
                 alert("Помилка авторизації: " + error.message);
             }
         });
 
-        logoutBtn.addEventListener('click', () => signOut(auth));
+        logoutBtn.addEventListener('click', () => auth.signOut());
 
-        onAuthStateChanged(auth, async (user) => {
+        auth.onAuthStateChanged(async (user) => {
             if (user) {
                 loginZone.style.display = 'none';
                 gameZone.style.display = 'block';
                 nameTxt.innerText = user.displayName || "Гравець";
 
-                const userRef = doc(db, "users", user.uid);
-                const userSnap = await getDoc(userRef);
+                const userRef = db.collection("users").doc(user.uid);
+                const userSnap = await userRef.get();
 
-                if (userSnap.exists()) {
+                if (userSnap.exists) {
                     balanceTxt.innerText = userSnap.data().balance;
                 } else {
-                    await setDoc(userRef, {
+                    await userRef.set({
                         username: user.displayName,
                         balance: 500
                     });
