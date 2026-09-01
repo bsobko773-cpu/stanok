@@ -5,17 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SO2 GOLD UPGRADER</title>
     <style>
-        /* Сучасний геймерський темний стиль */
         body { 
             background-color: #0b0b0e; 
             color: #ffffff; 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            font-family: 'Segoe UI', Roboto, Arial, sans-serif; 
             text-align: center; 
             padding: 50px 20px;
             margin: 0;
         }
-        
-        /* Картка головного меню з неоновим оранжевим світінням */
         .card { 
             background-color: #121216; 
             border: 1px solid #ff7700; 
@@ -25,7 +22,6 @@
             margin: 40px auto; 
             box-shadow: 0 0 30px rgba(255, 102, 0, 0.15); 
         }
-
         h1 {
             font-size: 28px;
             text-transform: uppercase;
@@ -35,14 +31,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-
-        p {
-            color: #9090a2;
-            font-size: 14px;
-            margin-bottom: 25px;
-        }
-        
-        /* Фірмова оранжева кнопка */
+        p { color: #9090a2; font-size: 14px; margin-bottom: 25px; }
         .btn { 
             background: linear-gradient(135deg, #ff9900 0%, #ff5500 100%); 
             color: #000000; 
@@ -59,19 +48,11 @@
             box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);
             transition: all 0.2s ease; 
         }
-        
         .btn:hover { 
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(255, 102, 0, 0.5);
         }
-
-        .btn:active {
-            transform: translateY(1px);
-        }
-        
         #game-zone { display: none; }
-        
-        /* Яскравий лічильник голди */
         .gold-container {
             background-color: #1a1a22;
             border-radius: 10px;
@@ -79,15 +60,12 @@
             margin: 20px 0;
             border-left: 4px solid #ff9900;
         }
-
         .gold-count { 
             color: #ffaa00; 
             font-size: 32px; 
             font-weight: 900; 
             text-shadow: 0 0 10px rgba(255, 170, 0, 0.4);
         }
-        
-        /* Кнопка виходу */
         .btn-logout {
             background: none;
             border: 1px solid #3a3a4a;
@@ -97,14 +75,6 @@
             width: auto;
             display: inline-block;
             margin-top: 25px;
-            box-shadow: none;
-            text-transform: none;
-        }
-        .btn-logout:hover {
-            border-color: #ff3333;
-            color: #ff3333;
-            box-shadow: none;
-            transform: none;
         }
     </style>
 </head>
@@ -113,52 +83,83 @@
     <div class="card">
         <h1>SO2 UPGRADER</h1>
         
-        <!-- Блок для входу -->
         <div id="login-zone">
             <p>Авторизуйтесь через Google, щоб отримати стартовий баланс</p>
             <button id="login-btn" class="btn">Увійти через Google</button>
         </div>
 
-        <!-- Блок гри (захований до моменту входу) -->
         <div id="game-zone">
             <p>Вітаємо в грі, <span id="user-name" style="color: #fff; font-weight: bold;">Гравець</span></p>
-            
             <div class="gold-container">
                 <span id="balance" class="gold-count">0</span> <span style="color: #ffaa00; font-weight: bold;">G</span>
             </div>
-
             <button id="upgrade-btn" class="btn">Крутити Апгрейд</button>
             <br>
             <button id="logout-btn" class="btn btn-logout">Вийти з акаунта</button>
         </div>
     </div>
 
-    <!-- Підключаємо Firebase сервіси з інтернету -->
     <script type="module">
         import { initializeApp } from "https://gstatic.com";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://gstatic.com";
         import { getFirestore, doc, getDoc, setDoc } from "https://gstatic.com";
 
-        // === ВСТАВ СВІЙ КОД ТУТ ===
-       script type="module"
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+        // Твій особистий конфіг
+        const firebaseConfig = {
+            apiKey: "AIzaSyDoSHF1EsKrHmtL6gb4IOnYS0vR3h86xZM",
+            authDomain: "so2-gold.firebaseapp.com",
+            projectId: "so2-gold",
+            storageBucket: "so2-gold.firebasestorage.app",
+            messagingSenderId: "944311935725",
+            appId: "1:944311935725:web:c26c3a17543ecb334922e4"
+        };
 
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyDoSHF1EsKrHmtL6gb4IOnYS0vR3h86xZM",
-    authDomain: "so2-gold.firebaseapp.com",
-    projectId: "so2-gold",
-    storageBucket: "so2-gold.firebasestorage.app",
-    messagingSenderId: "944311935725",
-    appId: "1:944311935725:web:c26c3a17543ecb334922e4"
-  };
+        // Ініціалізація сервісів
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-</script>
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const loginZone = document.getElementById('login-zone');
+        const gameZone = document.getElementById('game-zone');
+        const balanceTxt = document.getElementById('balance');
+        const nameTxt = document.getElementById('user-name');
+
+        loginBtn.addEventListener('click', async () => {
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                alert("Помилка авторизації: " + error.message);
+            }
+        });
+
+        logoutBtn.addEventListener('click', () => signOut(auth));
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                loginZone.style.display = 'none';
+                gameZone.style.display = 'block';
+                nameTxt.innerText = user.displayName || "Гравець";
+
+                const userRef = doc(db, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+
+                if (userSnap.exists()) {
+                    balanceTxt.innerText = userSnap.data().balance;
+                } else {
+                    await setDoc(userRef, {
+                        username: user.displayName,
+                        balance: 500
+                    });
+                    balanceTxt.innerText = "500";
+                }
+            } else {
+                loginZone.style.display = 'block';
+                gameZone.style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>
